@@ -1,21 +1,21 @@
-let express = require("express");
-let mysql = require("mysql");
-let exphbs = require("express-handlebars");
-let methodOverride = require("method-override");
-let bodyParser = require("body-parser");
-
+let express = require('express');
 let app = express();
-app.use(bodyParser.urlencoded({
-    exended: false
-}))
-app.use(methodOverride("_method"));
-app.engine("handlebars", exphbs({defaultLayout:"main"}));
-app.set("view engine", "handlebars");
+let port = process.env.PORT || 3000;
 
-let PORT = process.env.PORT || 3000;
-app.listen(PORT, function() {
-    console.log("now listening at: " + PORT);
-});
+let handlebars = require('express-handlebars');
 
-// let routes = require("./controllers/burgers_controllers.js");
-// app.use(routes);
+app.use(express.static('public'))
+
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
+
+app.engine('handlebars', handlebars({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
+let router = require('./controllers/burgers_controller.js')
+
+app.use(router);
+
+app.listen(port, ()=> {
+    console.log("listening on " + port)
+})

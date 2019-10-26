@@ -1,5 +1,5 @@
 
-INSERT INTO burgers_db(burger_name)
+INSERT INTO burgers(burger_name)
 VALUES
     ('McDouble'),
     ('Heart-Attack Burger'),
