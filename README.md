@@ -1,2 +1,1 @@
 # handlebars
-node_modules
