@@ -1,57 +1,102 @@
-let connection = require('./connection');
+  
+let connection = require("../config/connection.js");
+
+
+function printQuestionMarks(num) {
+    let arr = [];
+  
+    for (let i = 0; i < num; i++) {
+      arr.push("?");
+    }
+  
+    return arr.toString();
+  }
+  
+  // Helper function to convert object key/value pairs to SQL syntax
+  function objToSql(ob) {
+    let arr = [];
+  
+    // loop through the keys and push the key/value as a string int arr
+    for (let key in ob) {
+      let value = ob[key];
+      // check to skip hidden properties
+      if (Object.hasOwnProperty.call(ob, key)) {
+        // if string with spaces, add quotations (Lana Del Grey => 'Lana Del Grey')
+        if (typeof value === "string" && value.indexOf(" ") >= 0) {
+          value = "'" + value + "'";
+        }
+        // e.g. {name: 'Lana Del Grey'} => ["name='Lana Del Grey'"]
+        // e.g. {sleepy: true} => ["sleepy=true"]
+        arr.push(key + "=" + value);
+      }
+    }
+  
+    // translate array of strings to a single comma-separated string
+    return arr.toString();
+  }
 
 let orm = {
-    selectWhere: function(table, column, value, callback){
-        let queryString = 'select * from ?? where ?? = ?;';
-        connection.query(queryString, [table, column, value], function (err, res) {
-            if (err) throw err;
-            if (callback){
-                callback(res);
-            }
-        });
+    selectAll: function(tableInput, cb) {
+      let queryString = "SELECT * FROM " + tableInput + ";";
+      connection.query(queryString, function(err, result) {
+        if (err) {
+          throw err;
+        }
+        cb(result);
+      });
     },
-    insertInto: function(table, dataObject, callback){
-        let queryString = 'insert into ?? (??) values (?)';
-        connection.query(queryString, [table, dataObject.column, dataObject.value], function(err, res){
-            if (err) throw err;
-
-            console.log(res);
-            if (callback){
-                callback(res);
-            }
-        });
+    insertOne: function(table, cols, vals, cb) {
+      let queryString = "INSERT INTO " + table;
+        
+      queryString += " (";
+      queryString += cols.toString();
+      queryString += ") ";
+      queryString += "VALUES (";
+      queryString += printQuestionMarks(vals.length);
+      queryString += ") ";
+  
+      console.log(queryString);
+  
+      connection.query(queryString, vals, function(err, result) {
+        if (err) {
+          throw err;
+        }
+  
+        cb(result);
+      });
     },
-    updateWhere: function(table, columnToSet, valueToSet, column, value, callback){
-        let queryString = 'update ?? set ?? = ? where ?? = ?';
-        connection.query(queryString, [table, columnToSet, valueToSet, column, value], function(err, res){
-            if (err) throw err;
-
-            console.log(res);
-            if (callback){
-                callback(res);
-            }
-        });
+    // An example of objColVals would be {name: panther, sleepy: true}
+    updateOne: function(table, objColVals, condition, cb) {
+      let queryString = "UPDATE " + table;
+  
+      queryString += " SET ";
+      queryString += objToSql(objColVals);
+      queryString += " WHERE ";
+      queryString += condition;
+  
+      console.log(queryString);
+      connection.query(queryString, function(err, result) {
+        if (err) {
+          throw err;
+        }
+  
+        cb(result);
+      });
     },
-    deleteWhere: function(table, column, value, callback) {
-        let queryString = 'delete from ?? where ?? = ?';
-        connection.query(queryString, [table, column, value], function(err, res){
-            if (err) throw err;
-
-            console.log(res);
-            if (callback){
-                callback(res);
-            }
-        })
-    },
-    select: function(table, callback) {
-        let queryString = 'select * from ??';
-        connection.query(queryString, table, function(err, res){
-            if (err) throw err;
-            if(callback){
-                callback(res);
-            }
-        });
+    
+    delete: function(table, condition, cb) {
+      let queryString = "DELETE FROM " + table;
+      queryString += " WHERE ";
+      queryString += condition;
+  
+      connection.query(queryString, function(err, result) {
+        if (err) {
+          throw err;
+        }
+  
+        cb(result);
+      });
     }
-}
-
-module.exports = orm;
+  };
+  
+  module.exports = orm;
